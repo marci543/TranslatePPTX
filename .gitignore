@@ -1,6 +1,6 @@
 # output file
-*.text
-*.translations
+/*.text
+/*.translations
 /*.pptx
 
 # generic

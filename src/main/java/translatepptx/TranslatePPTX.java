@@ -95,6 +95,7 @@ public class TranslatePPTX extends POIXMLTextExtractor {
         public static boolean WriteTwice=false;
         public static boolean WriteFormats=false;
         public static boolean OmitRuns=false;
+        public static boolean OmitShapes=false;
         public static FileWriter LogFile=null;
         public static FileWriter TextFile=null;
         public static int TotalTextShapes=0;
@@ -126,7 +127,8 @@ public class TranslatePPTX extends POIXMLTextExtractor {
 	   System.err.println("  --OutFile      OutputFile.pptx");
 	   System.err.println("  --WideOnly");
 	   System.err.println("  --WriteTwice");
-	   System.err.println("  --OmitRuns");
+       System.err.println("  --OmitShapes");
+       System.err.println("  --OmitRuns");
 	   System.err.println("  --Autosize");
 	   System.err.println("  --WriteFormats");
 	   System.err.println("  --Verbose");
@@ -298,7 +300,9 @@ public class TranslatePPTX extends POIXMLTextExtractor {
               else if ( args[narg].equalsIgnoreCase("--WriteFormats") )
                WriteFormats=true;
               else if ( args[narg].equalsIgnoreCase("--OmitRuns") )
-               OmitRuns=true;
+                  OmitRuns=true;
+              else if ( args[narg].equalsIgnoreCase("--OmitShapes") )
+                  OmitShapes=true;
               else if ( args[narg].equalsIgnoreCase("--Translations") )
                { Mode=ModeValue.TRANSLATE;
                  ReadTranslations(args[narg+1]);
@@ -707,27 +711,34 @@ public class TranslatePPTX extends POIXMLTextExtractor {
           String Format=GetTextShapeFormat(ts);
           if (Format==null) Format="";
 
-          PrintLn(TextFile,TEXT_KEYWORD + " " + nText + " 0" + Format);
-          PrintLn(TextFile,TEXT_SEPARATOR);
-          PrintLn(TextFile,OldText);
-          if (WriteTwice)
-           { PrintLn(TextFile,TEXT_SEPARATOR);
-             PrintLn(TextFile,OldText);
-           };
-          PrintLn(TextFile,TEXT_SEPARATOR + "\n");
+            if (!OmitShapes) {
+                PrintLn(TextFile,TEXT_KEYWORD + " " + nText + " 0" + Format);
+                PrintLn(TextFile,TEXT_SEPARATOR);
+                PrintLn(TextFile,OldText);
+                if (WriteTwice)
+                 { PrintLn(TextFile,TEXT_SEPARATOR);
+                   PrintLn(TextFile,OldText);
+                 }
+                ;
+                PrintLn(TextFile,TEXT_SEPARATOR + "\n");
+            }
         }
        else if (Translations.containsKey(Key))
         { if (LogFile!=null)
            PrintLn(LogFile," ** Replacing (" + Key.width + "," + Key.height + ")");
-          TextShapesReplaced++; 
-          ts.setText(Translations.get(Key) );
-          if (Formats.containsKey(Key))
-           SetTextShapeFormat(ts, Formats.get(Key));
-          Translations.remove(Key);  
-          Changed = true;
-          if (Mode==ModeValue.TRANSLATE && Changed && Autosize)
-           Resize2(ts, Key);
-          return;
+            try {
+                TextShapesReplaced++;
+                ts.setText(Translations.get(Key) );
+                if (Formats.containsKey(Key))
+                 SetTextShapeFormat(ts, Formats.get(Key));
+                Translations.remove(Key);
+                Changed = true;
+                if (Mode==ModeValue.TRANSLATE && Changed && Autosize)
+                 Resize2(ts, Key);
+                return;
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Problem with TEXT_STRING %d %d. Try to use text runs 1, 2,...", Key.width, Key.height), e);
+            }
         };
 
        if (OmitRuns) return;
@@ -742,32 +753,40 @@ public class TranslatePPTX extends POIXMLTextExtractor {
              Key.setSize(nText, nRun);
 
              if ( Mode==ModeValue.EXTRACT )
-              { 
-                String Format = GetTextRunFormat(run);
-                PrintLn(TextFile,TEXT_KEYWORD + " " + Key.width + " " + Key.height + Format);
-                PrintLn(TextFile,TEXT_SEPARATOR);
-                PrintLn(TextFile,run.getRawText().toString());
-                PrintLn(TextFile,TEXT_SEPARATOR + "\n");
+              {
+                  if (!run.getRawText().trim().isBlank())
+                  {
+                      String Format = GetTextRunFormat(run);
+                      PrintLn(TextFile, TEXT_KEYWORD + " " + Key.width + " " + Key.height + Format);
+                      PrintLn(TextFile, TEXT_SEPARATOR);
+                      PrintLn(TextFile, run.getRawText());
+                      PrintLn(TextFile, TEXT_SEPARATOR + "\n");
+                  }
               }
              else if (Translations.containsKey(Key))
-              { String NewText = Translations.get(Key);
-                if ( NewText==null || NewText.trim().length()==0 )
-                 { 
-                   PrintLn(LogFile," ** Removing (" + Key.width + "," + Key.height + ")");
-                   run.setText("");
-                   EmptyTextRuns.add(run);
-                 }
-                else
-                 { 
-                   PrintLn(LogFile," ** Replacing (" + Key.width + "," + Key.height + ")");
-                   TextRunsReplaced++; 
-                   // remove trailing CR from text runs
-                   run.setText(NewText.replace("\n"," ").replace("\r"," "));
-                   if (Formats.containsKey(Key))
-                    SetTextRunFormat(run, Formats.get(Key));
-                 }
-                Translations.remove(Key);
-                Changed = true;
+              {
+                  try {
+                      String NewText = Translations.get(Key);
+                      if ( NewText==null || NewText.trim().length()==0 )
+                       {
+                         PrintLn(LogFile," ** Removing (" + Key.width + "," + Key.height + ")");
+                         run.setText("");
+                         EmptyTextRuns.add(run);
+                       }
+                      else
+                       {
+                         PrintLn(LogFile," ** Replacing (" + Key.width + "," + Key.height + ")");
+                         TextRunsReplaced++;
+                         // remove trailing CR from text runs
+                         run.setText(NewText.replace("\n"," ").replace("\r"," "));
+                         if (Formats.containsKey(Key))
+                          SetTextRunFormat(run, Formats.get(Key));
+                       }
+                      Translations.remove(Key);
+                      Changed = true;
+                  } catch (Exception e) {
+                      throw new RuntimeException(String.format("Problem with TEXT_STRING %d %d.", Key.width, Key.height), e);
+                  }
               }
            }
           para.getTextRuns().removeAll(EmptyTextRuns);

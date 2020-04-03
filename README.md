@@ -288,7 +288,8 @@ usage: TranslatePPTX Original.pptx [options]
  options: 
   --Translations Translations.txt
   --WideOnly
-  --OmitRuns 
+  --OmitShapes
+  --OmitRuns
   --Autosize
   --WriteFormats 
   --Verbose
@@ -304,6 +305,10 @@ The additional options here are:
 + `--OmitRuns`
 
     + Requests that the `.text` output file omit separate lines for text runs, retaining only lines for text shapes. (See [below](#ShapesRuns) for more on this distinction.)
+
++ `--OmitRuns`
+
+    + Requests that the `.text` output file omit text shapes, retaining only separate lines for text runs. (See [below](#ShapesRuns) for more on this distinction.)
 
 + `--Autosize`
 
@@ -350,7 +355,7 @@ Otherwise, edit the full string reported for `TEXT_STRING N 0` and delete all of
 
 If you only ever want to modify text at the level of shapes and never need the finer
 granularity of runs, you can use the command-line argument `--OmitRuns` to exclude
-the separate information on text runs from the `.text` output file.
+the separate information on text runs from the `.text` output file. `--OmitShapes` does the opposite.
 
 <a name="TextFormatting"></a>
 ## Text formatting

@@ -54,7 +54,7 @@ and a table:
 ### Step 1: Extract text strings
 
 ````bash
- % TranslatePPTX.sh MyDeck.pptx
+ % ./gradlew run --args "MyDeck.pptx"
 
 Wrote 8 text strings to MyDeck.text
  (9 text runs, 9 table entries)
@@ -249,7 +249,7 @@ the new command-line argument `--Translations`
 used to specify the list of revised text strings:
 
 ````bash
- % TranslatePPTX.sh MyDeck.pptx --Translations MyDeck.translations
+ % ./gradlew run --args "MyDeck.pptx --Translations MyDeck.translations"
 Wrote translated document to MyDeck_Translated.pptx.
 Thank you for your support.
 ````
@@ -281,7 +281,7 @@ There are a couple of other command-line options, which you can
 see by running `TranslatePPTX` with no options:
 
 ````
-% TranslatePPTX
+% ./gradlew run --args ""
 
 usage: TranslatePPTX Original.pptx [options]
 
@@ -372,31 +372,3 @@ The argument to `COLOR` is a string of the form `RR_GG_BB` where `RR, GG, BB` ar
 Specifying a format for text shapes will apply that format to all text runs in the shape.
 
 You can specify the `--WriteFormats` command-line option to direct `TranslatePPTX` to include formatting information from the original `.pptx` file in the `.text` output file.
-
-## Installation
-
-### Install requisite packages
-
-You will need Java version 1.8 and the [Apache POI](https://poi.apache.org) source distribution.
-
-### Building TranslatePPTX
-
-Eventually this project needs a `build.xml` file in its top-level directory
-to drive the `ant` build process. Since I don't know how to write one, for the time
-being I use the following simple procedure which works fine in practice:
-
-1. Copy the `src/TranslatePPTX.java` from the TranslatePPTX repository into the `src/ooxml/java/org/apache/poi/xslf/extractor` subdirectory of your Apache POI installation. Thus, assuming the environment variable POIHOME points to the root of your POI installation, from the head of the TranslatePPTX repository simply say 
-
-````bash
-% cp src/TranslatePPTX.java ${POIHOME}/src/ooxml/java/org/apache/poi/xslf/extractor
-````
-2. Now just (re-)build the POI tree in the usual way, which for me is simply to say `ant jar`:
-
-````bash
-% cd ${POIHOME}
-% ant jar
-````
-
-The first time you build POI from source, it takes a long time (half an hour or so), but subsequently rebuilding after adding `TranslatePPTX.java` only takes about a minute.
-
-3. Now you can run the little shell script [`TranslatePPTX.sh`](TranslatePPTX.sh) that comes with the TranslatePPTX distribution; this just sets some environment variables and runs `TranslatePPTX` in Java.

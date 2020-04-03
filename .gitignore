@@ -1,6 +1,7 @@
 # output file
 *.text
 *.translations
+/*.pptx
 
 # generic
 plugin.xml_gen

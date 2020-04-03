@@ -54,13 +54,14 @@ and a table:
 ### Step 1: Extract text strings
 
 ````bash
- % ./gradlew run --args "MyDeck.pptx"
+ % ./gradlew run --args "MyDeck.pptx --OmitShapes"
 
 Wrote 8 text strings to MyDeck.text
  (9 text runs, 9 table entries)
 Thank you for your support.
 ````
 
+`--OmitShapes` is preferred to use, since it keeps formatting.
 This produces a file named `MyDeck.text,`
 which looks like this:
 
@@ -172,7 +173,7 @@ prepended by an identifier string of the form
 for example, the text "Huge red Courier font and comic italics"
 appears 
 
- + once in full with indices `(M,N)=(3,0),` and
+ + once in full with indices `(M,N)=(3,0),` (`--OmitShapes` omits this) and
 
  + again split into three pieces with indices
    `(M,N)=(3,1) (3,2) (3,3)`.

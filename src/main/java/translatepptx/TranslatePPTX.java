@@ -288,8 +288,10 @@ public class TranslatePPTX extends POIXMLTextExtractor {
            boolean WriteLog=false;
            String TextFileName=null, OutputPPTXFileName=null;
            for(int narg=1; narg<args.length; narg++)
-            { 
-              if ( args[narg].equalsIgnoreCase("--Verbose") )
+            {
+              if ( args[narg].equalsIgnoreCase("--Autosize") )
+               Autosize=true;
+              else if ( args[narg].equalsIgnoreCase("--Verbose") )
                Verbose=true;
               else if ( args[narg].equalsIgnoreCase("--WriteLog") )
                WriteLog=true;
